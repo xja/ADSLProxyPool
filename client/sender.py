@@ -1,32 +1,44 @@
 import re
+import time
+import requests
 import subprocess
 import tornado.ioloop
-from tornado.web import RequestHandler, Application
-import time
 from client.config import *
-import requests
 from requests.exceptions import ConnectionError
+from tornado.web import RequestHandler, Application
 
 
 class Sender(RequestHandler):
+    def __init__(self, application, request, **kwargs):
+        self.current_ip = self.get_ip()
+        super().__init__(application, request, **kwargs)
+
     def get_ip(self, ifname=ADSL_IFNAME):
         (status, output) = subprocess.getstatusoutput('ifconfig')
         if status == 0:
             pattern = re.compile(ifname + '.*?inet.*?(\d+\.\d+\.\d+\.\d+).*?netmask', re.S)
             result = re.search(pattern, output)
             if result:
-                ip = result.group(1)
-                return ip
+                new_ip = result.group(1)
+                if self.current_ip and self.current_ip != new_ip:
+                    self.current_ip = new_ip
+                    return new_ip
 
     def adsl(self):
-        sleep_delays = [5, 15, 30, 60]
         status = 0
-        for delay in sleep_delays:
-            print('ADSL Start, Please wait')
-            (status, output) = subprocess.getstatusoutput(ADSL_BASH)
-            if status == 0:
-                print('ADSL Successfully')
-                ip = self.get_ip()
+        dialed = False
+        for i in range(3):
+            if not dialed:
+                print('ADSL Start, Please wait')
+                (status, output) = subprocess.getstatusoutput(ADSL_BASH)
+                if status == 0:
+                    print('ADSL Successfully')
+                    dialed = True
+                    ip = self.get_ip()
+                else:
+                    print('ADSL Failed, Please Check')
+                    status = '-3'
+            if dialed:
                 if ip:
                     print('New IP', ip)
                     try:
@@ -40,10 +52,7 @@ class Sender(RequestHandler):
                 else:
                     print('Get IP Failed')
                     status = '-2'
-            else:
-                print('ADSL Failed, Please Check')
-                status = '-3'
-            time.sleep(delay)
+            time.sleep(1)
         return status
 
     def get(self, api):
