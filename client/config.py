@@ -17,3 +17,9 @@ CLIENT_NAME = 'adsl1'
 
 # 拨号网卡
 ADSL_IFNAME = 'ppp0'
+
+# 监听端口
+SENDER_PORT = 8000
+
+# 监听接口
+SENDER_INTERFACE = '127.0.0.1'

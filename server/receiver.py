@@ -1,6 +1,4 @@
-import json
 from urllib.parse import urlencode, parse_qs, urlsplit
-
 import tornado.ioloop
 import tornado.web
 from tornado.curl_httpclient import CurlAsyncHTTPClient
@@ -62,34 +60,39 @@ class MainHandler(RequestHandler):
             self.write('No Client Port')
 
     def get(self, api):
-        if api == 'first':
-            result = self.redis.first()
-            if result:
-                self.write(result)
+        if api == 'proxy':
+            token = self.get_query_argument('token', '')
+            command = self.get_query_argument('command', '')
+            if token == TOKEN:
+                if command == 'first':
+                    result = self.redis.first()
+                    if result:
+                        self.write(result)
 
-        if api == 'random':
-            result = self.redis.random()
-            if result:
-                self.write(result)
+                if command == 'random':
+                    result = self.redis.random()
+                    if result:
+                        self.write(result)
 
-        if api == 'list':
-            result = self.redis.list()
-            print(result)
-            if result:
-                for proxy in result:
-                    self.write(proxy + '<br>')
+                if command == 'list':
+                    result = self.redis.list()
+                    print(result)
+                    if result:
+                        for proxy in result:
+                            self.write(proxy + '<br>')
 
-        if api == 'count':
-            self.write(str(self.redis.count()))
+                if command == 'count':
+                    print('requesting count')
+                    self.write(str(self.redis.count()))
 
 
 def run():
     application = Application([
-        (r'/', MainHandler),
+        # (r'/', MainHandler),
         (r'/(.*)', MainHandler),
     ])
     print('Listening on', RECEIVER_PORT)
-    application.listen(RECEIVER_PORT)
+    application.listen(RECEIVER_PORT, address=RECEIVER_INTERFACE)
     tornado.ioloop.IOLoop.instance().start()
 
 

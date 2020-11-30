@@ -1,7 +1,7 @@
 # Redis数据库IP
 REDIS_HOST = 'localhost'
 # Redis数据库密码, 如无则填None
-REDIS_PASSWORD = 'foobared'
+REDIS_PASSWORD = None
 # Redis数据库端口
 REDIS_PORT = 6379
 # 代理池键名
@@ -10,6 +10,8 @@ PROXY_KEY = 'adsl'
 TOKEN = 'adsl'
 # 验证URL
 TEST_URL = 'http://www.baidu.com'
+# 接收器运行接口
+RECEIVER_INTERFACE = '127.0.0.1'
 # 接收器运行端口
 RECEIVER_PORT = 8000
 # 检测间隔
